@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>상품 목록</h1>
+  <div class="product-grid">
+    {% for product in products %}
+      <a class="product-card" href="/products/{{ product.id }}">
+        <img src="/images/{{ product.id }}.jpg" alt="{{ product.name }}">
+        <div class="product-card-body">
+          <span class="category-tag">{{ product.category }}</span>
+          <h3>{{ product.name }}</h3>
+          <p class="price">{{ "{:,}".format(product.price) }}원</p>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}

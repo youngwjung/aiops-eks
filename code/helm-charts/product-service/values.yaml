@@ -1,0 +1,47 @@
+replicaCount: 2
+
+image:
+  repository: ""  # <account_id>.dkr.ecr.<region>.amazonaws.com/product-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+service:
+  port: 80
+  targetPort: 8000
+
+env:
+  otelExporterOtlpEndpoint: http://k8s-monitoring-trace-alloy-receiver.tracing.svc.cluster.local:4317
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+livenessProbe:
+  path: /healthz
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  path: /readyz
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 60s

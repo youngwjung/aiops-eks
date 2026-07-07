@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "frontend.fullname" . }}
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "frontend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "frontend.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "frontend.serviceAccountName" . }}
+      containers:
+        - name: frontend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: PRODUCT_SERVICE_URL
+              value: {{ .Values.env.productServiceUrl | quote }}
+            - name: ORDER_SERVICE_URL
+              value: {{ .Values.env.orderServiceUrl | quote }}
+            - name: USER_SERVICE_URL
+              value: {{ .Values.env.userServiceUrl | quote }}
+            - name: REVIEW_SERVICE_URL
+              value: {{ .Values.env.reviewServiceUrl | quote }}
+            - name: AI_REVIEW_SUMMARY_ENABLED
+              value: {{ .Values.env.aiReviewSummaryEnabled | quote }}
+            - name: AI_REVIEW_SUMMARY_SERVICE_URL
+              value: {{ .Values.env.aiReviewSummaryServiceUrl | quote }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.env.otelExporterOtlpEndpoint | quote }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

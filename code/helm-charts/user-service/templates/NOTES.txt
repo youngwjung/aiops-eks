@@ -1,0 +1,11 @@
+user-service가 배포되었습니다.
+
+클러스터 내부에서 접근:
+  http://{{ include "user-service.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+상태 확인:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ .Chart.Name }}
+
+주의: 이 서비스는 {{ .Values.jwtSecret.secretName }} Secret의 JWT_SECRET을 order-service, review-service와 공유합니다.
+배포 전에 해당 네임스페이스에 Secret이 이미 존재하는지 확인하세요:
+  kubectl -n {{ .Release.Namespace }} get secret {{ .Values.jwtSecret.secretName }}

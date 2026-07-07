@@ -1,0 +1,16 @@
+frontend가 배포되었습니다.
+
+{{- if .Values.ingress.enabled }}
+외부 접근:
+  https://{{ .Values.ingress.hostname }}
+{{- end }}
+
+클러스터 내부에서 접근:
+  http://{{ include "frontend.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+상태 확인:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ .Chart.Name }}
+
+AI 리뷰 요약 위젯을 켜려면 review-summary-service 배포 후 다음 값을 업데이트하세요:
+  --set env.aiReviewSummaryEnabled=true \
+  --set env.aiReviewSummaryServiceUrl=http://review-summary-service

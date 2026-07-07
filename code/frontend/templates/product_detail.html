@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="product-detail">
+    <img src="/images/{{ product.id }}.jpg" alt="{{ product.name }}" class="product-detail-image">
+    <div class="product-detail-info">
+      <span class="category-tag">{{ product.category }}</span>
+      <h1>{{ product.name }}</h1>
+      <p class="price">{{ "{:,}".format(product.price) }}원</p>
+      <p class="description">{{ product.description }}</p>
+      <p class="stock">재고: {{ product.stock }}개</p>
+
+      <form action="/products/{{ product.id }}/order" method="post" class="order-form">
+        <label>수량 <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}"></label>
+        <button type="submit">주문하기</button>
+      </form>
+    </div>
+  </div>
+
+  {% if ai_review_summary_enabled %}
+    <section class="ai-summary">
+      <h2>🤖 AI 리뷰 요약</h2>
+      {% if summary %}
+        <div class="ai-summary-grid">
+          <div>
+            <h4>👍 장점</h4>
+            <ul>{% for p in summary.pros %}<li>{{ p }}</li>{% endfor %}</ul>
+          </div>
+          <div>
+            <h4>👎 단점</h4>
+            <ul>{% for c in summary.cons %}<li>{{ c }}</li>{% endfor %}</ul>
+          </div>
+        </div>
+        <p class="overall">{{ summary.overall }}</p>
+      {% else %}
+        <p class="summary-error">{{ summary_error }}</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <section class="reviews">
+    <h2>리뷰 ({{ reviews|length }})</h2>
+
+    {% if logged_in %}
+      <form action="/products/{{ product.id }}/reviews" method="post" class="review-form">
+        <label>평점
+          <select name="rating">
+            <option value="5">5점</option>
+            <option value="4">4점</option>
+            <option value="3">3점</option>
+            <option value="2">2점</option>
+            <option value="1">1점</option>
+          </select>
+        </label>
+        <textarea name="comment" placeholder="리뷰를 남겨주세요" required></textarea>
+        <button type="submit">리뷰 작성</button>
+      </form>
+    {% else %}
+      <p><a href="/login">로그인</a> 후 리뷰를 작성할 수 있습니다.</p>
+    {% endif %}
+
+    <ul class="review-list">
+      {% for review in reviews %}
+        <li>
+          <div class="review-header">
+            <strong>{{ review.user_name }}</strong>
+            <span class="rating">{{ "★" * review.rating }}{{ "☆" * (5 - review.rating) }}</span>
+          </div>
+          <p>{{ review.comment }}</p>
+        </li>
+      {% else %}
+        <li>아직 리뷰가 없습니다.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

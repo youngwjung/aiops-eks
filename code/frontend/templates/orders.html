@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>주문내역</h1>
+  <ul class="order-list">
+    {% for order in orders %}
+      <li class="order-card">
+        <div class="order-header">
+          <span>주문번호 {{ order.id[:8] }}</span>
+          <span class="order-status">{{ order.status }}</span>
+        </div>
+        <ul>
+          {% for item in order['items'] %}
+            <li>{{ item.name }} x {{ item.quantity }} — {{ "{:,}".format(item.unit_price * item.quantity) }}원</li>
+          {% endfor %}
+        </ul>
+        <p class="order-total">총 {{ "{:,}".format(order.total_amount) }}원</p>
+      </li>
+    {% else %}
+      <li>주문 내역이 없습니다.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

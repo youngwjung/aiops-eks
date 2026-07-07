@@ -1,0 +1,63 @@
+replicaCount: 2
+
+image:
+  repository: ""  # <account_id>.dkr.ecr.<region>.amazonaws.com/frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+service:
+  port: 80
+  targetPort: 8000
+
+env:
+  productServiceUrl: http://product-service
+  orderServiceUrl: http://order-service
+  userServiceUrl: http://user-service
+  reviewServiceUrl: http://review-service
+  # review-summary-service 배포 전까지는 false로 유지 — 위젯이 화면에 노출되지 않는다.
+  aiReviewSummaryEnabled: false
+  aiReviewSummaryServiceUrl: ""
+  otelExporterOtlpEndpoint: http://k8s-monitoring-trace-alloy-receiver.tracing.svc.cluster.local:4317
+
+# Envoy Gateway(gateway.networking.k8s.io) HTTPRoute로 외부 노출.
+# parentRefs는 terraform의 기존 Gateway(name: eg, namespace: envoy-gateway-system)를 그대로 참조한다.
+ingress:
+  enabled: true
+  hostname: ""  # 예: saltmart.<account_id>.<domain>
+  gatewayName: eg
+  gatewayNamespace: envoy-gateway-system
+  sectionName: https
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+livenessProbe:
+  path: /healthz
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  path: /readyz
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 60s

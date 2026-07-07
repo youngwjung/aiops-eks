@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ brand_name }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">🧂 {{ brand_name }}</a>
+    <nav>
+      <a href="/">상품 목록</a>
+      {% if logged_in %}
+        <a href="/orders">주문내역</a>
+        <form action="/logout" method="post" class="inline-form">
+          <button type="submit" class="link-button">로그아웃</button>
+        </form>
+      {% else %}
+        <a href="/login">로그인</a>
+        <a href="/register">회원가입</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <p>&copy; {{ brand_name }}</p>
+  </footer>
+</body>
+</html>

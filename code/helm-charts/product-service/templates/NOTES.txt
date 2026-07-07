@@ -1,0 +1,7 @@
+product-service가 배포되었습니다.
+
+클러스터 내부에서 접근:
+  http://{{ include "product-service.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+상태 확인:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ .Chart.Name }}

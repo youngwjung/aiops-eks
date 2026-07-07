@@ -1,0 +1,43 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install git-remote-codecommit
+      - wget https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64 -O /usr/bin/yq
+      - chmod +x /usr/bin/yq
+  pre_build:
+    commands:
+      - COMMIT_HASH=$(echo $COMMIT_ID | cut -c 1-7)
+      - AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d ':')
+      - echo Logging in to Amazon ECR...
+      - |
+        aws ecr get-login-password \
+        --region $AWS_DEFAULT_REGION | \
+        docker login --username AWS --password-stdin \
+        $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # 컨테이너 이미지 태그
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
+      - AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
+      - AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
+      - echo Building Docker image...
+      # 이미지 생성
+      - docker build --tag $ECR_REPO:$IMAGE_TAG .
+      # 컨테이너 이미지 Push
+      - echo Pushing Docker image...
+      - docker push $ECR_REPO:$IMAGE_TAG
+
+      # Helm 차트 업데이트        
+      - git clone $HELM_CHART_REPO
+      - cd "$(basename "$HELM_CHART_REPO")"
+      - yq -i '.image.repository=strenv(ECR_REPO)' values.yaml
+      - yq -i '.image.tag=strenv(IMAGE_TAG)' values.yaml
+      
+      - git config --global user.email $AUTHOR_EMAIL
+      - git config --global user.name $AUTHOR_NAME
+
+      - git add .
+      - git commit -m "$COMMIT_MESSAGE"
+      - git push

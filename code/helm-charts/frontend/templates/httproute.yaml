@@ -1,0 +1,23 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "frontend.fullname" . }}
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ .Values.ingress.gatewayName }}
+      namespace: {{ .Values.ingress.gatewayNamespace }}
+      sectionName: {{ .Values.ingress.sectionName }}
+  hostnames:
+    - {{ required "ingress.hostname을 지정해야 합니다 (예: saltmart.<account_id>.<domain>)" .Values.ingress.hostname }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "frontend.fullname" . }}
+          port: {{ .Values.service.port }}
+{{- end }}

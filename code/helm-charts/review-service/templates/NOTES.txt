@@ -1,0 +1,10 @@
+review-service가 배포되었습니다.
+
+클러스터 내부에서 접근:
+  http://{{ include "review-service.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+상태 확인:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ .Chart.Name }}
+
+주의: 이 서비스는 {{ .Values.jwtSecret.secretName }} Secret의 JWT_SECRET을 user-service, order-service와 공유하며,
+product-service({{ .Values.env.productServiceUrl }})를 호출해 리뷰 작성 시 상품 존재 여부를 검증합니다.

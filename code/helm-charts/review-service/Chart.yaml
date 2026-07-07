@@ -1,0 +1,6 @@
+apiVersion: v2
+name: review-service
+description: 소금가게 플랫폼 상품 리뷰 서비스
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

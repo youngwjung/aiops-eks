@@ -1,0 +1,54 @@
+replicaCount: 2
+
+image:
+  repository: ""  # <account_id>.dkr.ecr.<region>.amazonaws.com/review-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+service:
+  port: 80
+  targetPort: 8000
+
+# user-service, order-service와 동일한 값을 공유해야 하므로
+# 이 차트에서 Secret을 새로 만들지 않고, 플랫폼에서 미리 생성해둔 Secret을 이름으로 참조한다.
+jwtSecret:
+  secretName: saltmart-jwt-secret
+  secretKey: jwt-secret
+
+env:
+  productServiceUrl: http://product-service
+  otelExporterOtlpEndpoint: http://k8s-monitoring-trace-alloy-receiver.tracing.svc.cluster.local:4317
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+livenessProbe:
+  path: /healthz
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  path: /readyz
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 60s
